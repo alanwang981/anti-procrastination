@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Anti-Procrastination",
+  "version": "1.0",
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "warning.html",
+        "help.html",
+        "report.html"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

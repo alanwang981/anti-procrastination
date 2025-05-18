@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Productivity Report</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 25px;
+      min-width: 500px;
+      line-height: 1.6;
+    }
+    h1 {
+      font-size: 1.8em;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    select {
+      flex-grow: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 8px 15px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #report {
+      margin-top: 20px;
+    }
+    .time-entry {
+      font-size: 1.2em;
+      margin: 15px 0;
+    }
+    .positive { color: #28a745; }
+    .negative { color: #dc3545; }
+    .ratio-display {
+      font-size: 1.3em;
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f8f8f8;
+      border-radius: 5px;
+    }
+    progress {
+      width: 100%;
+      height: 12px;
+      margin-top: 10px;
+    }
+    .timestamp {
+      text-align: center;
+      color: #6c757d;
+      margin-top: 20px;
+    }
+    .no-data {
+      text-align: center;
+      font-size: 1.1em;
+      color: #6c757d;
+      margin: 30px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Productivity Report</h1>
+  
+  <div class="controls">
+    <select id="range">
+      <option value="daily">Today</option>
+      <option value="weekly">Last 7 Days</option>
+      <option value="monthly">Last 30 Days</option>
+      <option value="total">All Time</option>
+    </select>
+    <button id="generate">Generate</button>
+    <button id="refresh">Refresh</button>
+  </div>
+  
+  <div id="report">
+    <p class="no-data">Select a time range and generate report</p>
+  </div>
+
+  <script src="report.js"></script>
+</body>
+</html>

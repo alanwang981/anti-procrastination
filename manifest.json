@@ -7,7 +7,8 @@
     "storage",
     "scripting",
     "alarms",
-    "notifications"
+    "notifications",
+    "https://us-central1-your-project-id.cloudfunctions.net/*"
   ],
   "host_permissions": ["<all_urls>"],
   "action": {

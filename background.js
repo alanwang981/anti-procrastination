@@ -84,6 +84,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 // Message handling
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // error and success messages on popup
   switch (request.action) {
     case 'toggleFocus':
       focusMode = !focusMode;
@@ -127,5 +128,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ whitelist: res.whitelist || [] });
       });
       return true;
-  }
+    }
+
+    // this is for reset tracking function in report
+    if (request.action === "resetTracking") {
+      lastUrl = null;
+      lastSwitchTime = Date.now();
+      sendResponse({ status: "success" });
+    }
 });

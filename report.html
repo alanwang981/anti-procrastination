@@ -8,6 +8,7 @@
       padding: 25px;
       min-width: 500px;
       line-height: 1.6;
+      font-size: 1.25em;
     }
     h1 {
       font-size: 1.8em;
@@ -23,16 +24,18 @@
     select {
       flex-grow: 1;
       padding: 8px;
-      border: 1px solid #ddd;
+      border: 2px solid #cecece;
       border-radius: 4px;
+      font-size: 1.25em;
     }
     button {
       padding: 8px 15px;
-      background-color: #4285f4;
-      color: white;
+      background-color: #4887eb;
+      color: #f8f8f8;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 1.25em;
     }
     #report {
       margin-top: 20px;
@@ -66,24 +69,47 @@
       color: #6c757d;
       margin: 30px 0;
     }
+    .danger-zone {
+      margin-top: 30px;
+      padding: 15px;
+      border-top: 1px solid #f8d7da;
+    }
+    #resetStats {
+      background-color: #dc3545;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .confirmation-dialog {
+      display: none;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>Productivity Report</h1>
   
-  <div class="controls">
-    <select id="range">
-      <option value="daily">Today</option>
-      <option value="weekly">Last 7 Days</option>
-      <option value="monthly">Last 30 Days</option>
-      <option value="total">All Time</option>
-    </select>
-    <button id="generate">Generate</button>
-    <button id="refresh">Refresh</button>
-  </div>
+   <select id="range">
+    <option value="daily">Today</option>
+    <option value="weekly">Last 7 Days</option>
+    <option value="monthly">Last 30 Days</option>
+    <option value="total">All Time</option>
+  </select>
+  <button id="generate">Generate Report</button>
+  <button id="refresh">Refresh</button>
   
-  <div id="report">
-    <p class="no-data">Select a time range and generate report</p>
+  <div id="report"></div>
+
+  <div class="danger-zone">
+    <h3>Reset Statistics</h3>
+    <button id="resetStats">Reset All Data</button>
+    <div class="confirmation-dialog" id="confirmReset">
+      <p>Are you sure? This cannot be undone.</p>
+      <button id="confirmResetBtn">Yes, Reset</button>
+      <button id="cancelResetBtn">Cancel</button>
+    </div>
   </div>
 
   <script src="report.js"></script>

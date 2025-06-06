@@ -2,15 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const { OpenAI } = require('openai');
 const cors = require('cors');
+const app = express();
 app.use(cors({
   origin: [
     'chrome-extension://your-extension-id',
     'https://your-service.onrender.com'
   ]
 }));
-
-const app = express();
-app.use(cors());
 app.use(express.json());
 
 const openai = new OpenAI({

@@ -2,6 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const { OpenAI } = require('openai');
 const cors = require('cors');
+app.use(cors({
+  origin: [
+    'chrome-extension://your-extension-id',
+    'https://your-service.onrender.com'
+  ]
+}));
 
 const app = express();
 app.use(cors());
@@ -33,11 +39,3 @@ app.post('/chat', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-const cors = require('cors');
-app.use(cors({
-  origin: [
-    'chrome-extension://your-extension-id',
-    'https://your-service.onrender.com'
-  ]
-}));

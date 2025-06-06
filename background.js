@@ -40,14 +40,27 @@ function trackProductiveTime(domain, elapsed) {
 
 // Send proactive message to user
 function sendProactiveMessage(type) {
-  chrome.windows.create({
-    url: chrome.runtime.getURL(`chatbot.html?proactive=${type}`),
-    type: 'popup',
-    width: 370,
-    height: 550,
-    left: Math.round(screen.availWidth / 2 - 185),
-    top: Math.round(screen.availHeight / 2 - 275)
-  });
+  try {
+    chrome.windows.create({
+      url: chrome.runtime.getURL(`chatbot.html?proactive=${type}`),
+      type: 'popup',
+      width: 370,
+      height: 550,
+      left: Math.round(screen.availWidth / 2 - 185),
+      top: Math.round(screen.availHeight / 2 - 275)
+    });
+  } catch (error) {
+    console.error("Failed to open chatbot:", error);
+    // Fallback notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icon.png',
+      title: 'Productivity Reminder',
+      message: type === 'reminder' 
+        ? "You're on a non-whitelisted site!" 
+        : "Great job staying focused!"
+    });
+  }
 }
 
 // Time tracking

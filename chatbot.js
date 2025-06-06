@@ -53,30 +53,35 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
+    // Integrating AI chatbot
     async getAIResponse(messages) {
+      const API_ENDPOINT = "https://your-service.onrender.com/chat";
+      
       try {
-        const API_ENDPOINT = "https://your-render-service.onrender.com/chat";
-        
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            messages: messages,
-            system: "You're a productivity assistant. Keep responses under 3 sentences focused on: focus techniques, time management, and avoiding distractions."
+            messages,
+            system: "You're a productivity assistant. Keep responses under 3 sentences."
           })
         });
 
-        if (!response.ok) throw new Error("API error");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
-        return data.response || "I couldn't generate a response. Try asking differently.";
+        return data.response;
         
       } catch (error) {
         console.error("API Error:", error);
-        // Fallback responses when API fails
-        const lastMessage = messages[messages.length-1]?.content.toLowerCase() || "";
-        if (lastMessage.includes("focus")) return "Try the Pomodoro technique: 25min work + 5min break";
-        if (lastMessage.includes("distract")) return "Close distracting tabs and use Focus Mode";
-        return "I'm having connection issues. Try again later or ask about productivity techniques.";
+        // Smart fallback based on last message
+        const lastMsg = messages[messages.length-1]?.content.toLowerCase() || "";
+        
+        if (lastMsg.includes("focus") || lastMsg.includes("tips")) return "Try the Pomodoro technique: 25min work + 5min break";
+        if (lastMsg.includes("distract")) return "Consider using Focus Mode to block distractions";
+        return "I'm having temporary connection issues. Try asking about productivity techniques!";
       }
     }
     

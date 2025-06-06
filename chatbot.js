@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Integrating AI chatbot
     async getAIResponse(messages) {
-      const API_ENDPOINT = "https://your-service.onrender.com/chat";
+      const API_ENDPOINT = "https://anti-procrastination.onrender.com/chat";
       
       try {
         const response = await fetch(API_ENDPOINT, {

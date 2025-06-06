@@ -101,6 +101,23 @@ function updateFocusStatus() {
   });
 }
 
+function openChatbot() {
+  // Create a new popup window
+  chrome.windows.create({
+    url: chrome.runtime.getURL('chatbot.html'),
+    type: 'popup',
+    width: 370,
+    height: 550,
+    left: Math.round(screen.availWidth / 2 - 185),
+    top: Math.round(screen.availHeight / 2 - 275)
+  }, (newWindow) => {
+    if (chrome.runtime.lastError) {
+      showStatus('Failed to open chatbot', 'error');
+      console.error('Error:', chrome.runtime.lastError);
+    }
+  });
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   // Help button
@@ -127,5 +144,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('refresh').addEventListener('click', () => {
     loadLists();
     updateFocusStatus();
+  });
+
+  // Chatbot button
+  document.getElementById('openChatbot').addEventListener('click', openChatbot);
+
+  // Handle Enter key
+  document.getElementById('whitelistInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addToList('whitelist');
+  });
+  document.getElementById('blacklistInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addToList('blacklist');
+  });
+  document.getElementById('focusDuration').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('toggleFocus').click();
   });
 });

@@ -3,6 +3,8 @@ let lastSwitchTime = Date.now();
 let focusMode = false;
 let focusEndTime = 0;
 let timer = null;
+let whitelistTimeTracker = {};
+let proactiveMessageCooldown = false;
 
 // Domain matching utility
 function matchesDomain(list, domain) {
@@ -15,11 +17,46 @@ function matchesDomain(list, domain) {
   });
 }
 
+// Track productive time and trigger proactive messages
+function trackProductiveTime(domain, elapsed) {
+  chrome.storage.local.get(['whitelist'], (res) => {
+    if (matchesDomain(res.whitelist, domain)) {
+      const today = new Date().toISOString().split('T')[0];
+      whitelistTimeTracker[today] = (whitelistTimeTracker[today] || 0) + elapsed;
+      
+      if (whitelistTimeTracker[today] >= 1200 && !proactiveMessageCooldown) {
+        sendProactiveMessage('encouragement');
+        whitelistTimeTracker[today] = 0;
+        proactiveMessageCooldown = true;
+        setTimeout(() => { proactiveMessageCooldown = false; }, 3600000);
+      }
+    } else if (!proactiveMessageCooldown) {
+      sendProactiveMessage('reminder');
+      proactiveMessageCooldown = true;
+      setTimeout(() => { proactiveMessageCooldown = false; }, 1800000);
+    }
+  });
+}
+
+// Send proactive message to user
+function sendProactiveMessage(type) {
+  chrome.windows.create({
+    url: chrome.runtime.getURL(`chatbot.html?proactive=${type}`),
+    type: 'popup',
+    width: 370,
+    height: 550,
+    left: Math.round(screen.availWidth / 2 - 185),
+    top: Math.round(screen.availHeight / 2 - 275)
+  });
+}
+
 // Time tracking
 function saveTime(domain) {
   const now = Date.now();
-  const elapsed = (now - lastSwitchTime) / 1000; // seconds
+  const elapsed = (now - lastSwitchTime) / 1000;
   lastSwitchTime = now;
+
+  trackProductiveTime(domain, elapsed);
 
   chrome.storage.local.get(['tracking', 'whitelist', 'blacklist'], (res) => {
     const tracking = res.tracking || {};
@@ -84,7 +121,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 // Message handling
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  // error and success messages on popup
   switch (request.action) {
     case 'toggleFocus':
       focusMode = !focusMode;
@@ -128,12 +164,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ whitelist: res.whitelist || [] });
       });
       return true;
-    }
 
-    // this is for reset tracking function in report
-    if (request.action === "resetTracking") {
-      lastUrl = null;
-      lastSwitchTime = Date.now();
-      sendResponse({ status: "success" });
-    }
+    case 'openChatbot':
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.scripting.executeScript({
+            target: {tabId: tabs[0].id},
+            files: ['chatbot.js']
+          }, () => {
+            chrome.tabs.sendMessage(tabs[0].id, {action: 'showChatbot'});
+          });
+        } else {
+          chrome.tabs.create({url: chrome.runtime.getURL('chatbot.html')});
+        }
+      });
+      sendResponse({success: true});
+      break;
+  }
+
+  if (request.action === "resetTracking") {
+    lastUrl = null;
+    lastSwitchTime = Date.now();
+    sendResponse({ status: "success" });
+  }
 });

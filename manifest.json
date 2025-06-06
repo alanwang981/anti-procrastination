@@ -1,31 +1,32 @@
 {
   "manifest_version": 3,
   "name": "Anti-Procrastination",
-  "version": "1.0",
+  "version": "2.0",
+  "description": "Productivity extension with popup chatbot",
   "permissions": [
     "tabs",
     "storage",
     "scripting",
-    "alarms",
     "notifications",
-    "https://us-central1-your-project-id.cloudfunctions.net/*"
+    "https://your-backend-service.com/*"
   ],
-  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
   },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "warning.html",
-        "help.html",
-        "report.html"
-      ],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  "web_accessible_resources": [{
+    "resources": [
+      "chatbot.html",
+      "chatbot.js",
+      "chatbot.css"
+    ],
+    "matches": ["<all_urls>"]
+  }]
 }

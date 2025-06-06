@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Productivity Assistant</title>
+  <meta charset="UTF-8">
+  <style>
+    /* Inline critical CSS to ensure it loads immediately */
+    body { 
+      margin: 0;
+      padding: 0;
+      width: 350px;
+      height: 500px;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    .chatbot-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  </style>
+  <!-- Load the rest of the CSS -->
+  <link rel="stylesheet" href="chatbot.css">
+</head>
+<body>
+  <div class="chatbot-container">
+    <div class="chatbot-header">
+      <div class="chatbot-title">Productivity Assistant</div>
+      <button class="chatbot-close">✕</button>
+    </div>
+    <div class="chatbot-messages"></div>
+    <div class="chatbot-input">
+      <input type="text" class="chatbot-text" placeholder="Type your message..." autofocus>
+      <button class="chatbot-send">➤</button>
+    </div>
+  </div>
+  
+  <script src="chatbot.js"></script>
+</body>
+</html>

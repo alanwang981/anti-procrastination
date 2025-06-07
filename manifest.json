@@ -1,38 +1,30 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 1,
   "name": "Anti-Procrastination",
-  "version": "2.0",
-  "description": "Productivity extension with popup chatbot",
+  "version": "1.0",
   "permissions": [
     "tabs",
     "storage",
     "scripting",
-    "notifications",
-    "https://*.onrender.com/*"
+    "alarms",
+    "notifications"
   ],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon.png"
   },
-  "icons": {
-    "16": "icon.png",
-    "32": "icon.png", 
-    "48": "icon.png",
-    "128": "icon.png"
-  },
   "background": {
     "service_worker": "background.js"
   },
-  "web_accessible_resources": [{
-    "resources": [
-      "chatbot.html",
-      "chatbot.js",
-      "chatbot.css",
-      "icon.png"
-    ],
-    "matches": ["<all_urls>"]
-  }],
-  "host_permissions": [
-    "https://*.onrender.com/*"
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "warning.html",
+        "help.html",
+        "report.html"
+      ],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

@@ -1,129 +1,81 @@
+// variables
 let lastUrl = null;
 let lastSwitchTime = Date.now();
 let focusMode = false;
 let focusEndTime = 0;
 let timer = null;
-let whitelistTimeTracker = {};
-let proactiveMessageCooldown = false;
 
-// Domain matching utility
-function matchesDomain(list, domain) {
-  if (!domain || !list) return false;
+// domain matching utility
+function matchesDomain(list, domain){
+  if(!domain || !list) return false;
   return list.some(pattern => {
-    if (pattern.startsWith('*.')) {
+    if(pattern.startsWith('*.')){
       return domain === pattern.substring(2) || domain.endsWith('.' + pattern.substring(2));
     }
     return domain === pattern;
   });
 }
 
-// Track productive time and trigger proactive messages
-function trackProductiveTime(domain, elapsed) {
-  chrome.storage.local.get(['whitelist'], (res) => {
-    if (matchesDomain(res.whitelist, domain)) {
-      const today = new Date().toISOString().split('T')[0];
-      whitelistTimeTracker[today] = (whitelistTimeTracker[today] || 0) + elapsed;
-      
-      if (whitelistTimeTracker[today] >= 1200 && !proactiveMessageCooldown) {
-        sendProactiveMessage('encouragement');
-        whitelistTimeTracker[today] = 0;
-        proactiveMessageCooldown = true;
-        setTimeout(() => { proactiveMessageCooldown = false; }, 3600000);
-      }
-    } else if (!proactiveMessageCooldown) {
-      sendProactiveMessage('reminder');
-      proactiveMessageCooldown = true;
-      setTimeout(() => { proactiveMessageCooldown = false; }, 1800000);
-    }
-  });
-}
-
-// Send proactive message to user
-function sendProactiveMessage(type) {
-  try {
-    chrome.windows.create({
-      url: chrome.runtime.getURL(`chatbot.html?proactive=${type}`),
-      type: 'popup',
-      width: 370,
-      height: 550,
-      left: Math.round(screen.availWidth / 2 - 185),
-      top: Math.round(screen.availHeight / 2 - 275)
-    });
-  } catch (error) {
-    console.error("Failed to open chatbot:", error);
-    // Fallback notification
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: 'icon.png',
-      title: 'Productivity Reminder',
-      message: type === 'reminder' 
-        ? "You're on a non-whitelisted site!" 
-        : "Great job staying focused!"
-    });
-  }
-}
-
-// Time tracking
-function saveTime(domain) {
-  const now = Date.now();
-  const elapsed = (now - lastSwitchTime) / 1000;
+// time tracking
+function saveTime(domain){
+  const now = Date.now(); // get time
+  const elapsed = (now-lastSwitchTime)/1000; // convert to seconds
   lastSwitchTime = now;
 
-  trackProductiveTime(domain, elapsed);
-
+  // report tracking
   chrome.storage.local.get(['tracking', 'whitelist', 'blacklist'], (res) => {
     const tracking = res.tracking || {};
     const today = new Date().toISOString().split('T')[0];
-    
-    if (!tracking[today]) tracking[today] = { whitelist: 0, blacklist: 0 };
+    // today's report tracking
+    if(!tracking[today]) tracking[today] = { whitelist: 0, blacklist: 0 };
     
     const isWhite = matchesDomain(res.whitelist, domain);
     const isBlack = matchesDomain(res.blacklist, domain);
 
-    if (isWhite) tracking[today].whitelist += elapsed;
-    if (isBlack) tracking[today].blacklist += elapsed;
-
+    if(isWhite) tracking[today].whitelist += elapsed;
+    if(isBlack) tracking[today].blacklist += elapsed;
+    // total report tracking
     tracking._total = tracking._total || { whitelist: 0, blacklist: 0 };
-    if (isWhite) tracking._total.whitelist += elapsed;
-    if (isBlack) tracking._total.blacklist += elapsed;
+    if(isWhite) tracking._total.whitelist += elapsed;
+    if(isBlack) tracking._total.blacklist += elapsed;
 
-    chrome.storage.local.set({ tracking });
+    chrome.storage.local.set({tracking});
   });
 }
 
-// Tab monitoring
-function monitorTab(tab) {
-  if (!tab.url) return;
-  
-  try {
+// tab monitoring
+function monitorTab(tab){
+  if(!tab.url) return;
+  try{
     const domain = new URL(tab.url).hostname.replace('www.', '');
-    if (lastUrl) saveTime(lastUrl);
+    if(lastUrl) saveTime(lastUrl);
     lastUrl = domain;
-    
-    if (focusMode) enforceFocusMode(domain, tab.id);
-  } catch (e) {
+    // call on focus mode function
+    if(focusMode) enforceFocusMode(domain, tab.id);
+  } catch(e){
     console.error('Error processing URL:', e);
   }
 }
 
-// Focus mode enforcement
+// focus mode enforcement
 function enforceFocusMode(domain, tabId) {
   chrome.storage.local.get(['whitelist', 'blacklist'], (res) => {
     const isBlacklisted = matchesDomain(res.blacklist, domain);
     const isWhitelisted = matchesDomain(res.whitelist, domain);
-    
+    // change blacklisted tab to warning
     if (isBlacklisted) {
       chrome.tabs.update(tabId, {url: chrome.runtime.getURL('warning.html')});
-    } else if (!isWhitelisted) {
+    } // give a warning for nonwhitelisted tabs
+    else if(!isWhitelisted){
       chrome.scripting.executeScript({
         target: {tabId: tabId},
-        func: () => alert("This site is not whitelisted! Please return to a whitelisted site.")
+        func: () => alert("This site is productive! Please return to a produtive site.")
       });
     }
   });
 }
 
-// Tab event listeners
+// tab event listeners
 chrome.tabs.onActivated.addListener(activeInfo => {
   chrome.tabs.get(activeInfo.tabId, monitorTab);
 });
@@ -132,16 +84,18 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') monitorTab(tab);
 });
 
-// Message handling
+// message handling
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // error and success messages on popup
   switch (request.action) {
     case 'toggleFocus':
       focusMode = !focusMode;
-      
+      // check focus mode
       if (focusMode) {
         const duration = request.duration || 60;
         focusEndTime = Date.now() + duration * 60000;
         timer = setInterval(() => {
+          // end focus mode
           if (Date.now() >= focusEndTime) {
             focusMode = false;
             clearInterval(timer);
@@ -177,27 +131,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ whitelist: res.whitelist || [] });
       });
       return true;
+    }
 
-    case 'openChatbot':
-      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.scripting.executeScript({
-            target: {tabId: tabs[0].id},
-            files: ['chatbot.js']
-          }, () => {
-            chrome.tabs.sendMessage(tabs[0].id, {action: 'showChatbot'});
-          });
-        } else {
-          chrome.tabs.create({url: chrome.runtime.getURL('chatbot.html')});
-        }
-      });
-      sendResponse({success: true});
-      break;
-  }
-
-  if (request.action === "resetTracking") {
-    lastUrl = null;
-    lastSwitchTime = Date.now();
-    sendResponse({ status: "success" });
-  }
+    // this is for reset tracking function in report
+    if (request.action === "resetTracking") {
+      lastUrl = null;
+      lastSwitchTime = Date.now();
+      sendResponse({ status: "success" });
+    }
 });

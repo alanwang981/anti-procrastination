@@ -45,9 +45,9 @@ function generateReport() {
       `;
       return;
     }
-
-    const ratio = totalTime > 0 ? (whitelistTime / totalTime * 100) : 0;
     
+    // display stats
+    const ratio = totalTime > 0 ? (whitelistTime / totalTime * 100) : 0;
     reportEl.innerHTML = `
       <div class="time-entry positive">Whitelisted: ${formatTime(whitelistTime)}</div>
       <div class="time-entry negative">Blacklisted: ${formatTime(blacklistTime)}</div>

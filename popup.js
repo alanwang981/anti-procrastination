@@ -1,15 +1,15 @@
-// DOM elements
+// DOM elements (what is this? idk)
 const statusEl = document.getElementById('status');
 
 // Show status message
-function showStatus(message, type = '') {
+function showStatus(message, type = ''){
   statusEl.textContent = message;
   statusEl.className = type;
   if (type) setTimeout(() => statusEl.className = '', 3000);
 }
 
 // Load and display lists
-function loadLists() {
+function loadLists(){
   chrome.storage.local.get(['whitelist', 'blacklist'], res => {
     const renderList = (list, elementId) => {
       const el = document.getElementById(elementId);
@@ -39,30 +39,29 @@ function loadLists() {
 }
 
 // Validate domain format
-function isValidDomain(domain) {
+function isValidDomain(domain){
   return /^(\*\.)?([a-z0-9-]+\.)+[a-z]{2,}$/i.test(domain);
 }
 
 // Add domain to list
-function addToList(type) {
+function addToList(type){
   const input = document.getElementById(`${type}Input`).value.trim();
-  if (!isValidDomain(input)) {
+  // error messages
+  if(!isValidDomain(input)){
     showStatus('Invalid domain format (use example.com or *.example.com)', 'error');
     return;
   }
-
   chrome.storage.local.get([type], res => {
     const list = res[type] || [];
-    if (list.includes(input)) {
+    if(list.includes(input)){
       showStatus(`"${input}" already in ${type}`, 'error');
       return;
     }
-
     list.push(input);
     chrome.storage.local.set({ [type]: list }, () => {
-      if (chrome.runtime.lastError) {
+      if(chrome.runtime.lastError){
         showStatus('Failed to save, try again', 'error');
-      } else {
+      } else{
         showStatus(`Added "${input}" to ${type}`, 'success');
         document.getElementById(`${type}Input`).value = '';
         loadLists();
@@ -76,9 +75,10 @@ function removeFromList(type, domain) {
   chrome.storage.local.get([type], res => {
     const list = (res[type] || []).filter(d => d !== domain);
     chrome.storage.local.set({ [type]: list }, () => {
-      if (chrome.runtime.lastError) {
+      // more msgs (more like remains from debugging)
+      if(chrome.runtime.lastError){
         showStatus('Failed to remove, try again', 'error');
-      } else {
+      } else{
         showStatus(`Removed "${domain}" from ${type}`, 'success');
         loadLists();
       }
@@ -86,10 +86,10 @@ function removeFromList(type, domain) {
   });
 }
 
-// Update focus mode status display
-function updateFocusStatus() {
+// Update focus mode status display (time)
+function updateFocusStatus(){
   chrome.runtime.sendMessage({action: 'getFocusStatus'}, response => {
-    if (response.active) {
+    if(response.active){
       const mins = Math.floor(response.remaining / 60000);
       const secs = Math.floor((response.remaining % 60000) / 1000);
       statusEl.textContent = `Focus Mode: ${mins}m ${secs}s remaining`;
@@ -101,24 +101,7 @@ function updateFocusStatus() {
   });
 }
 
-function openChatbot() {
-  // Create a new popup window
-  chrome.windows.create({
-    url: chrome.runtime.getURL('chatbot.html'),
-    type: 'popup',
-    width: 370,
-    height: 550,
-    left: Math.round(screen.availWidth / 2 - 185),
-    top: Math.round(screen.availHeight / 2 - 275)
-  }, (newWindow) => {
-    if (chrome.runtime.lastError) {
-      showStatus('Failed to open chatbot', 'error');
-      console.error('Error:', chrome.runtime.lastError);
-    }
-  });
-}
-
-// Initialize
+// Initialize 
 document.addEventListener('DOMContentLoaded', () => {
   // Help button
   document.getElementById('helpBtn').addEventListener('click', () => {
@@ -144,19 +127,5 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('refresh').addEventListener('click', () => {
     loadLists();
     updateFocusStatus();
-  });
-
-  // Chatbot button
-  document.getElementById('openChatbot').addEventListener('click', openChatbot);
-
-  // Handle Enter key
-  document.getElementById('whitelistInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') addToList('whitelist');
-  });
-  document.getElementById('blacklistInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') addToList('blacklist');
-  });
-  document.getElementById('focusDuration').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') document.getElementById('toggleFocus').click();
   });
 });

@@ -1,5 +1,5 @@
 {
-  "manifest_version": 1,
+  "manifest_version": 3,
   "name": "Anti-Procrastination",
   "version": "1.0",
   "permissions": [
@@ -27,4 +27,5 @@
       "matches": ["<all_urls>"]
     }
   ]
+
 }
